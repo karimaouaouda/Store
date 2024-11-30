@@ -12,83 +12,134 @@ namespace Store
 {
     public partial class Form1 : Form
     {
-        struct Product
+
+        struct product
         {
-            public string Name;
-            public int Prix;
-            public string Code;
-            public int _Contiti;
-            public Product(string name, int prix, string code,int Contiti)
+            public int _Code;
+            public string _Name;
+            public int _Prix;
+            public int _quantity;
+
+            public product(int code, string name, int prix, int quantity)
             {
-                Name = name;
-                Prix = prix;
-                Code = code;
-                _Contiti = Contiti;
+                _Code = code;
+                _Name = name;
+                _Prix = prix;
+                _quantity = quantity;
             }
         }
 
 
-        Product[] products =new Product[3];
+        List<product> Products = new List<product>();
 
-        List <Product> Products;
-
-        int PrivRandom = 0;
-        void AddProductRandomly(Product[] products,int RandomProduct)
-        {
-            
-            if (RandomProduct== PrivRandom)
-            {
-                products[RandomProduct]._Contiti++;
-                dataTable.Clear();
-                foreach (Product product in products)
-                {
-                    dataTable.Rows.Add(product.Name, product.Prix, product.Code, product._Contiti);
-                }
-                dataGridView1.DataSource = dataTable;
-            }
-            PrivRandom = RandomProduct;
-            Price = Price + products[RandomProduct].Prix;
-            lblProductName.Text= products[RandomProduct].Name;  
-            label1.Text = Price.ToString();
-        }
-
+        product Product = new product();
         public Form1()
         {
 
             InitializeComponent();
         }
 
-         public DataTable dataTable = new DataTable();
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
-            products[0] = new Product("Laptop", 10, "P101",0);
-            products[1] = new Product("Smartphone", 20, "P102", 0);
-            products[2] = new Product("Headphones", 15, "P103", 0);
-
-            dataTable.Columns.Add("Name", typeof(string));
-            dataTable.Columns.Add("Prix", typeof(int));
-            dataTable.Columns.Add("Code", typeof(string));
-            dataTable.Columns.Add("Contiti", typeof(string));
-
-            // Fill the DataTable with data from the array
-            foreach (Product product in products)
-            {
-                dataTable.Rows.Add(product.Name, product.Prix, product.Code,product._Contiti);
-            }
-            //dataGridView1.Columns[0].HeaderText = "ID";
-            //dataGridView1.Columns[1].HeaderText = "Code";
-            //dataGridView1.Columns[2].HeaderText = "Name";
-            //dataGridView1.Columns[2].HeaderText = "Prix";
-            dataGridView1.DataSource = dataTable;
-        }
-
-        public int Price = 0;
         private void button1_Click(object sender, EventArgs e)
         {
             Random rn = new Random();
-            int RanProduct = rn.Next(0, products.Length);
-            AddProductRandomly(products, RanProduct);
+            Product = Products[rn.Next(0, Products.Count - 1)];
+            AddProduct(Products, Product);
+        }
+
+        private void CalculatePriceAndChangeName(List<product> products, product RandomProduct)
+        {
+            lblTotalPrice.Text = CalCulateTotalPrice(dataGridView1).ToString();
+            lblProductName.Text = RandomProduct._Name;
+        }
+        private void AddProduct(List<product> products, product RandomProduct)
+        {
+            if (!isExistInDataGridVieaw(dataGridView1, RandomProduct))
+            {
+                AddNewItemToDataGridView(dataGridView1, RandomProduct);
+                CalculatePriceAndChangeName(products, RandomProduct);
+            }
+            else
+            {
+                incimentQuantity(RandomProduct, dataGridView1);
+                CalculatePriceAndChangeName(products, RandomProduct);
+            }
+        }
+
+        private void incimentQuantity(product randomProduct, DataGridView dataGridView1)
+        {
+
+            foreach (DataGridViewRow row in dataGridView1.Rows)
+            {
+                if (row.IsNewRow) continue;
+
+
+                if (row.Cells["Code"].Value.ToString() == randomProduct._Code.ToString())
+                {
+                    row.Cells["Quantity"].Value = (Convert.ToInt32(row.Cells["Quantity"].Value) + 1).ToString();
+                }
+
+            }
+        }
+
+        DataTable productTable = new DataTable();
+
+        private int CalCulateTotalPrice(DataGridView dataGridView1)
+        {
+            int totalSum = 0;
+
+            foreach (DataGridViewRow row in dataGridView1.Rows)
+            {
+                if (row.IsNewRow) continue;
+
+
+                if (row.Cells["Prix"].Value != null && row.Cells["Quantity"].Value != null)
+                {
+                    int price = Convert.ToInt32(row.Cells["Prix"].Value);
+                    int quantity = Convert.ToInt32(row.Cells["Quantity"].Value);
+                    totalSum += price * quantity;
+                }
+
+            }
+
+            return totalSum;
+        }
+
+        private void AddNewItemToDataGridView(DataGridView DataGridView, product Product)
+        {
+            if (DataGridView.ColumnCount == 0)
+            {
+                DataGridView.Columns.Add("Code", "Code");
+                DataGridView.Columns.Add("Name", "Name");
+                DataGridView.Columns.Add("Prix", "Prix");
+                DataGridView.Columns.Add("Quantity", "Quantity");
+            }
+            dataGridView1.Rows.Add(Product._Code, Product._Name, Product._Prix, Product._quantity);
+        }
+
+        private bool isExistInDataGridVieaw(DataGridView DataGridView, product Product)
+        {
+            foreach (DataGridViewRow row in DataGridView.Rows)
+            {
+                if (row.Cells["Code"].Value != null && (int)row.Cells["Code"].Value == Product._Code)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            dataGridView1.Columns.Add("Code", "Code");
+            dataGridView1.Columns.Add("Name", "Name");
+            dataGridView1.Columns.Add("Prix", "Prix");
+            dataGridView1.Columns.Add("Quantity", "Quantity");
+            Products.Add(new product(101, "Laptop", 1500, 1));
+            Products.Add(new product(102, "Mouse", 20, 1));
+            Products.Add(new product(103, "Keyboard", 45, 1));
+            Products.Add(new product(104, "KAmira", 45, 1));
+            Products.Add(new product(105, "MIcro", 45, 1));
+            Products.Add(new product(106, "Tilifon", 45, 1));
 
         }
     }

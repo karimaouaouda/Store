@@ -1,0 +1,10 @@
+12#//#banana#//#100
+13#//#Smartphone#//#100
+14#//#Headphones#//#8
+15#//#Mouse#//#6
+16#//#Oculus Quest 2#//#100
+17#//#Keyboard#//#100
+18#//#Apple Watch Series 9#//#100
+19#//#GoPro HERO11#//#77
+20#//#Google Pixel 8#//#100
+20#//#Sony WH-1000XM5 Headphones#//#100

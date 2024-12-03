@@ -67,13 +67,16 @@ namespace Store
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            products.Add(new Product(101, "Laptop", 1500));
-            products.Add(new Product(102, "Mouse", 20));
-            products.Add(new Product(103, "Keyboard", 45));
-            products.Add(new Product(104, "KAmira", 45));
-            products.Add(new Product(105, "MIcro", 45));
-            products.Add(new Product(106, "Tilifon", 45));
 
+
+           products = Product.GetAllProducts();
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Form frmAddProducts = new frmAddProduct();
+            frmAddProducts.ShowDialog();
         }
     }
 }

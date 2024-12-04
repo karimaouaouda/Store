@@ -4,6 +4,8 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Reflection.Emit;
+using System.Runtime.Remoting.Channels;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -39,6 +41,7 @@ namespace Store
             AddProduct(randomProduct);
         }
 
+
         private Product selectRandomProduct()
         {
             Random rand = new Random();
@@ -56,7 +59,7 @@ namespace Store
             this.currentBuySession.pushProduct(randomProduct);
 
             lblTotalPrice.Text = this.currentBuySession.getTotalPrice().ToString();
-
+            lblProductName.Text = randomProduct.name;
         }
 
 
@@ -67,12 +70,93 @@ namespace Store
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            products.Add(new Product(101, "Laptop", 1500));
-            products.Add(new Product(102, "Mouse", 20));
-            products.Add(new Product(103, "Keyboard", 45));
-            products.Add(new Product(104, "KAmira", 45));
-            products.Add(new Product(105, "MIcro", 45));
-            products.Add(new Product(106, "Tilifon", 45));
+
+
+            products = Product.GetAllProducts();
+            CustomizeDataGridView(dataGridView1);
+            txtProductCodeBare.TabIndex = 0;
+            txtProductCodeBare.Focus();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Form frmAddProducts = new frmAddProduct();
+            frmAddProducts.ShowDialog();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            this.currentBuySession.clear();
+            lblTotalPrice.Text = 0.ToString();
+            Form1_Load(null, null);
+        }
+
+        public void CustomizeDataGridView(DataGridView dataGridView1)
+        {
+            // تخصيص الخطوط
+            dataGridView1.DefaultCellStyle.Font = new Font("Arial", 12);
+
+            // تخصيص الألوان
+            dataGridView1.BackgroundColor = Color.LightGray;
+            dataGridView1.GridColor = Color.Black;
+            dataGridView1.AlternatingRowsDefaultCellStyle.BackColor = Color.LightBlue;
+
+            // تخصيص العناوين
+            dataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.DarkBlue;
+            dataGridView1.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+            dataGridView1.ColumnHeadersDefaultCellStyle.Font = new Font("Arial", 14, FontStyle.Bold);
+
+            // تخصيص التحديد
+            dataGridView1.DefaultCellStyle.SelectionBackColor = Color.CornflowerBlue;
+            dataGridView1.DefaultCellStyle.SelectionForeColor = Color.White;
+            dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+
+            // إيقاف السطر الفارغ
+            dataGridView1.AllowUserToAddRows = false;
+
+            // تعديل حجم الأعمدة ليتناسب مع المحتوى
+            dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+            // تخصيص الحدود بين الخلايا
+            dataGridView1.CellBorderStyle = DataGridViewCellBorderStyle.Single;
+        }
+
+        private void txtProductCodeBare_TextChanged(object sender, EventArgs e)
+        {
+
+
+            if (txtProductCodeBare.Text.Count() == 13)
+            {
+                if (long.TryParse(txtProductCodeBare.Text, out long barcodeAsLong))
+                {
+
+
+
+
+                    
+                    Product SelectedProduct = Product.Find(barcodeAsLong);
+                    this.currentBuySession.pushProduct(SelectedProduct);
+                    lblProductName.Text = SelectedProduct.name;
+                    lblTotalPrice.Text = this.currentBuySession.getTotalPrice().ToString();
+
+                    txtProductCodeBare.Text = "";
+                    txtProductCodeBare.TabIndex = 0;
+
+                }
+                else
+                {
+                    MessageBox.Show("Invalid barcode! Could not convert to long.");
+                }
+            }
+        }
+
+        private void txtProductCodeBare_Leave(object sender, EventArgs e)
+        {
+            //implimentation
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
 
         }
     }

@@ -28,6 +28,7 @@ namespace Store
         {
             return this._totalAmount;
         }
+
         public void pushProduct(Product product)
         {
             if( !this.isExists(product))
@@ -43,16 +44,28 @@ namespace Store
             this.increamenttotalPrice(product.getPrice());
         }
 
+
         private bool isExists(Product product)
         {
             foreach (DataGridViewRow row in this.products)
             {
-                if (row.Cells["Code"].Value != null && (int)row.Cells["Code"].Value == product.getCode())
+                // التأكد من أن القيمة ليست null ويمكن تحويلها إلى int
+                if (row.Cells["Code"].Value != null)
                 {
-                    return true;
+                    long codeValue;
+                    // محاولة تحويل قيمة الخلية إلى int
+                    if (long.TryParse(row.Cells["Code"].Value.ToString(), out codeValue))
+                    {
+                        // مقارنة الكود
+                        if (codeValue == product.getCode())
+                        {
+                            return true;
+                        }
+                    }
                 }
             }
             return false;
+
         }
 
         private void increamenttotalPrice(float price)
@@ -85,6 +98,12 @@ namespace Store
         private void generateSessionId()
         {
             this._sessionId = Guid.NewGuid().ToString();
+        }
+
+        internal void clear()
+        {
+            this.products.Clear();
+            this._totalAmount = 0;
         }
     }
 }

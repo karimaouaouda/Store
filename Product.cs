@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -10,12 +12,14 @@ namespace Store
 {
     public class Product
     {
-        public int codeBare;
+        public long  codeBare;
         public string name { get; set; }
 
         public float price;
+        enum enMode { add, update }
 
-
+        string filePath = @"C:\Users\bille\OneDrive\Desktop\github\Store\Products.txt";
+        enMode Mode = enMode.add;
         public Product(int code, string name, int price)
         {
             this.codeBare = code;
@@ -26,7 +30,7 @@ namespace Store
         {
 
         }
-        public int getCode()
+        public long getCode()
         {
             return codeBare;
         }
@@ -44,7 +48,7 @@ namespace Store
             this.price = price;
         }
 
-        public void setCode(int code)
+        public void setCode(long code)
         {
             /// <remarks>
             /// Check the pattern of the codeBare
@@ -61,15 +65,69 @@ namespace Store
 
         public bool save()
         {
-            if (AddProductToFile(this))
-                return true;
-            else
-                return false;
+            switch (Mode)
+            {
+                case enMode.add:
+                    {
+                        if (AddProductToFile(this))
+                            return true;
+                        else
+                            return false;
+                    }
+                case enMode.update:
+                    {
+                        if (UpdateProduct(this))
+                            return true;
+                        else
+                            return false;
+                    }
+                default:
+                    return false;
+            }
         }
 
+
+        private bool UpdateProduct(Product product)
+        {
+            List<Product> products = new List<Product>();
+            products = GetAllProducts();
+            foreach (Product p in products)
+            {
+                if (p.codeBare == product.getCode())
+                {
+                    p.name = product.name;            // Assuming name is a property
+                    p.price = product.price;
+                }
+            }
+
+            return _UpdateProductsInFile(products);
+        }
+
+        private bool _UpdateProductsInFile(List<Product> products)
+        {
+            try
+            {
+                File.WriteAllText(filePath, string.Empty);
+
+                foreach (Product p in products)
+                {
+                    string lineToAdd = p.codeBare.ToString() + "#//#" + p.name + "#//#" + p.price.ToString();
+                    using (StreamWriter writer = new StreamWriter(filePath, true))
+                    {
+                        writer.WriteLine(lineToAdd);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return false;
+            }
+            return true;
+        }
         private bool AddProductToFile(Product product)
         {
-            string filePath = @"C:\Users\bille\OneDrive\Desktop\github\Store\Products.txt";
+
             try
             {
                 // Use StreamWriter with append mode
@@ -100,6 +158,23 @@ namespace Store
             return products;
         }
 
+        public static Product Find(long codeBare)
+        {
+            List<Product> products = new List<Product>();
+            products = GetAllProductsFromTheFile();
+
+            foreach (Product product in products)
+            {
+                if (product.codeBare == codeBare)
+                    return product;
+            }
+            return null;
+        }
+
+        public static bool IsExis(Product product)
+        {
+            return Find(product.codeBare) != null;
+        }
         private static List<Product> GetAllProductsFromTheFile()
         {
 
@@ -112,7 +187,15 @@ namespace Store
                 {
                     Product prod = new Product();
                     string[] ProductInfo = line.Split(new string[] { "#//#" }, StringSplitOptions.None);
-                    prod.setCode(Convert.ToInt32(ProductInfo[0]));
+                    if (long.TryParse(ProductInfo[0], out long barcodeAsLong))
+                    {
+                   
+                    prod.setCode(barcodeAsLong);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Invalid barcode! Could not convert to long.");
+                    }
                     prod.name = Convert.ToString(ProductInfo[1]);
                     prod.price = Convert.ToSingle(ProductInfo[2]);
                     products.Add(prod);
